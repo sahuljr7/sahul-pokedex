@@ -386,6 +386,15 @@ summary:focus-visible,
   color: var(--accent-strong);
 }
 
+.search-source-icon {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 4px;
+  vertical-align: -2px;
+  color: var(--accent-strong);
+}
+
 .search-empty {
   display: grid;
   gap: 4px;
@@ -457,12 +466,27 @@ summary:focus-visible,
 }
 
 .hero-section h1 {
+  display: flex;
   max-width: 610px;
+  align-items: flex-start;
+  gap: 0.16em;
   margin: 0;
   font-size: clamp(38px, 5.3vw, 63px);
   font-weight: 640;
   letter-spacing: -0.065em;
   line-height: 1.04;
+}
+
+.hero-section h1 > span {
+  min-width: 0;
+}
+
+.hero-title-icon {
+  flex: 0 0 auto;
+  width: 0.55em;
+  height: 0.55em;
+  margin-top: 0.24em;
+  color: var(--accent-strong);
 }
 
 .hero-subtitle {
@@ -1522,6 +1546,13 @@ summary:focus-visible,
   font-weight: 620;
 }
 
+.closing-note-icon {
+  width: 15px;
+  height: 15px;
+  margin-left: 4px;
+  vertical-align: -3px;
+}
+
 .page-footer {
   display: flex;
   align-items: center;
@@ -1619,46 +1650,58 @@ summary:focus-visible,
   }
 
   .topbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 9px 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 39px;
+    grid-template-areas:
+      'brand theme'
+      'nav nav'
+      'search search';
+    gap: 8px;
     width: calc(100% - 24px);
     min-height: 0;
     margin-top: 8px;
-    padding: 9px 10px;
+    padding: 10px;
     border-radius: 17px;
   }
 
   .brand {
-    flex: 1;
-    order: 1;
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  .brand-copy strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .topbar-actions {
-    flex: 1 1 100%;
-    order: 3;
+    display: contents;
   }
 
   .search-wrap {
+    grid-area: search;
     width: auto;
-    flex: 1;
     height: 39px;
   }
 
   .theme-toggle {
+    grid-area: theme;
     width: 39px;
     height: 39px;
   }
 
   .main-nav {
-    order: 2;
-    justify-content: flex-end;
-    gap: 2px;
+    grid-area: nav;
+    justify-content: space-between;
+    gap: 4px;
   }
 
   .main-nav a {
-    padding: 8px 7px;
+    flex: 1;
+    padding: 8px 5px;
     font-size: 10px;
+    text-align: center;
   }
 
   .page-frame {

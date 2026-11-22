@@ -4,10 +4,12 @@ import { useCallback, useState } from 'react'
 import {
   ArrowDown,
   ArrowRight,
+  BookOpen,
   ChevronDown,
   CircleDot,
   Moon,
   Sun,
+  Swords,
 } from 'lucide-react'
 import {
   additionalMegaRaids,
@@ -172,9 +174,10 @@ export function DiaryApp() {
       <div className="ambient ambient-two" aria-hidden="true" />
 
       <header className="topbar">
-        <a className="brand" href="#home" aria-label="Sahul's Pokémon GO Raid & Event Diary home" onClick={() => setActiveNav('home')}>
-          <span className="brand-mark"><CircleDot size={18} aria-hidden="true" /></span>
-          <span className="brand-copy"><strong>{introduction.title}</strong></span>
+  <a className="brand" href="#home" aria-label={`${introduction.title} home`} onClick={() => setActiveNav('home')}>
+  <span className="brand-mark"><BookOpen size={18} aria-hidden="true" /></span>
+  <span className="brand-copy"><strong>{introduction.title.replace(/^📖\s/, '')}</strong></span>
+
         </a>
         <nav className="main-nav" aria-label="Main navigation">
           {[
@@ -203,7 +206,10 @@ export function DiaryApp() {
         <section className="hero-section" aria-labelledby="page-title">
           <div className="hero-copy">
             <p className="hero-date">{introduction.dateRange}</p>
-            <h1 id="page-title">{introduction.title}</h1>
+            <h1 id="page-title" aria-label={introduction.title}>
+  <BookOpen className="hero-title-icon" aria-hidden="true" />
+  <span>{introduction.title.replace(/^📖\s/, '')}</span>
+  </h1>
             <p className="hero-subtitle">{introduction.paragraphs[0]}</p>
             <a className="hero-link" href="#events" onClick={() => setActiveNav('events')}>
               Explore the week <ArrowDown size={16} aria-hidden="true" />
@@ -268,9 +274,12 @@ export function DiaryApp() {
           </div>
 
           <div className="final-notes">
-            {closingNotes.map((note, index) => (
-              <p id={`closing-note-${index}`} key={`closing-${index}`}>{note}</p>
-            ))}
+  {closingNotes.map((note, index) => (
+  <p id={`closing-note-${index}`} key={`closing-${index}`} aria-label={note}>
+    {note.endsWith(' ⚔️') ? <>{note.slice(0, -3)}<Swords className="closing-note-icon" aria-hidden="true" /></> : note}
+  </p>
+  ))}
+
           </div>
         </section>
 

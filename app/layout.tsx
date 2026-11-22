@@ -1,11 +1,12 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { introduction } from '@/lib/diary-data'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: "📖 Sahul's Pokémon GO Raid & Event Diary — 23–29 November 2026",
-  description: 'Your objective this week is to prepare as effectively as possible for raids and events in Pokémon GO between November 23 and November 29, 2026.',
-  applicationName: "Sahul's Pokémon GO Raid & Event Diary",
+  title: introduction.title,
+  description: introduction.paragraphs[0],
+  applicationName: introduction.title,
   generator: 'v0.app',
   icons: {
     icon: [
