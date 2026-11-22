@@ -1,19 +1,24 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ArrowUpRight, Search, X } from 'lucide-react'
+import { ArrowUpRight, BookOpen, Search, Swords, X } from 'lucide-react'
 import { searchDiary, type SearchHit } from '@/lib/diary-search'
 
 function HighlightText({ text, query }: { text: string; query: string }) {
-  if (!query.trim()) return <>{text}</>
+  const hasBook = text.startsWith('📖 ')
+  const hasSwords = text.endsWith(' ⚔️')
+  const visibleText = text.slice(hasBook ? 3 : 0, hasSwords ? -3 : undefined)
   const escaped = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const parts = text.split(new RegExp(`(${escaped})`, 'ig'))
+  const parts = visibleText.split(new RegExp(`(${escaped})`, 'ig'))
+
   return (
-    <>
+    <span aria-label={text}>
+      {hasBook && <BookOpen className="search-source-icon" aria-hidden="true" />}
       {parts.map((part, index) => part.toLocaleLowerCase() === query.trim().toLocaleLowerCase()
         ? <mark key={`${part}-${index}`}>{part}</mark>
         : <span key={`${part}-${index}`}>{part}</span>)}
-    </>
+      {hasSwords && <Swords className="search-source-icon" aria-hidden="true" />}
+    </span>
   )
 }
 

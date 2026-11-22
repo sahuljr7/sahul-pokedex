@@ -17,6 +17,9 @@ export type SearchHit = {
   context: string
   text: string
   score: number
+  group?: string
+  scope?: number
+  blockId?: string
 }
 
 function normalize(value: string) {
@@ -44,7 +47,9 @@ function slug(value: string) {
 
 function buildIndex() {
   const index: Omit<SearchHit, 'score'>[] = []
-  const add = (item: Omit<SearchHit, 'score'>) => index.push(item)
+  const add = (item: Omit<SearchHit, 'score'>, group = item.id, scope = 2, blockId?: string) => {
+    index.push({ ...item, group, scope, blockId })
+  }
 
   add({
     id: 'intro',
@@ -61,7 +66,7 @@ function buildIndex() {
       title: event.title,
       context: event.date,
       text: collectText(event).join(' '),
-    })
+    }, event.id, 2)
 
     for (const block of event.blocks) {
       const context = `${event.date} · ${event.title}`
@@ -74,7 +79,7 @@ function buildIndex() {
           ...(block.type === 'table' ? block.columns : []),
           ...collectText(block),
         ].join(' '),
-      })
+      }, event.id, 1, block.id)
 
       if (block.type === 'table') {
         block.rows.forEach((row, rowIndex) => {
@@ -84,7 +89,7 @@ function buildIndex() {
             title: row[0] ?? block.title,
             context: `${context} · ${block.title}`,
             text: [...block.columns, ...row].join(' '),
-          })
+          }, event.id, 0, block.id)
         })
       }
 
@@ -96,7 +101,7 @@ function buildIndex() {
             title: item,
             context: `${context} · ${block.title}`,
             text: item,
-          })
+          }, event.id, 0, block.id)
         })
       }
 
@@ -108,7 +113,7 @@ function buildIndex() {
             title: item.label,
             context: `${context} · ${block.title}`,
             text: [item.label, item.value, 'detail' in item ? item.detail : ''].filter(Boolean).join(' '),
-          })
+          }, event.id, 0, block.id)
         })
       }
 
@@ -120,7 +125,7 @@ function buildIndex() {
             title: item.title,
             context: `${context} · ${block.title}`,
             text: `${item.title} ${item.details}`,
-          })
+          }, event.id, 0, block.id)
         })
       }
     }
@@ -132,7 +137,7 @@ function buildIndex() {
     title: additionalMegaRaids.title,
     context: additionalMegaRaids.title,
     text: ['Raid boss', 'Weaknesses', 'Best counters', ...collectText(additionalMegaRaids)].join(' '),
-  })
+  }, additionalMegaRaids.id, 2)
   add({
     id: 'additional-mega-cp',
     target: 'additional-mega-cp',
@@ -142,14 +147,14 @@ function buildIndex() {
       'Pokémon caught', 'Normal weather', 'Weather boosted',
       ...additionalMegaRaids.raids.flatMap((raid) => [raid.pokemon, raid.normal, raid.boosted]),
     ].join(' '),
-  })
+  }, additionalMegaRaids.id, 1, 'additional-mega-cp')
   add({
     id: 'additional-mega-movesets',
     target: 'additional-mega-movesets',
     title: 'Recommended movesets',
     context: additionalMegaRaids.title,
     text: additionalMegaRaids.raids.map((raid) => `${raid.pokemon}: ${raid.moveset}`).join(' '),
-  })
+  }, additionalMegaRaids.id, 1, 'additional-mega-movesets')
   additionalMegaRaids.raids.forEach((raid, indexInList) => {
     add({
       id: `mega-raid-${indexInList}`,
@@ -157,22 +162,22 @@ function buildIndex() {
       title: raid.pokemon,
       context: additionalMegaRaids.title,
       text: collectText(raid).join(' '),
-    })
+    }, additionalMegaRaids.id, 0, 'additional-mega-raid-bosses')
     add({
       id: `mega-moveset-${indexInList}`,
       target: `mega-moveset-${slug(raid.pokemon)}`,
       title: raid.pokemon,
       context: `${additionalMegaRaids.title} · Recommended movesets`,
       text: `${raid.pokemon}: ${raid.moveset} ${raid.source}`,
-    })
+    }, additionalMegaRaids.id, 0, 'additional-mega-movesets')
     add({
       id: `mega-cp-${indexInList}`,
       target: `mega-cp-${slug(raid.pokemon)}`,
       title: raid.pokemon.replace('Mega ', ''),
       context: 'Hundo CP cheat sheet for these four raids',
-            text: `Pokémon caught Normal weather Weather boosted ${raid.pokemon.replace('Mega ', '')} ${raid.normal} ${raid.boosted}`,
+      text: `Pokémon caught Normal weather Weather boosted ${raid.pokemon.replace('Mega ', '')} ${raid.normal} ${raid.boosted}`,
+    }, additionalMegaRaids.id, 0, 'additional-mega-cp')
 
-    })
   })
 
   add({
@@ -188,7 +193,7 @@ function buildIndex() {
       checklistInfo.resetLabel,
       ...checklist.flatMap((group) => [group.day, ...group.items]),
     ].join(' '),
-  })
+  }, 'checklist', 2)
 
   checklist.forEach((group) => {
     add({
@@ -197,7 +202,7 @@ function buildIndex() {
       title: group.day,
       context: checklistInfo.title,
       text: group.items.join(' '),
-    })
+    }, 'checklist', 1, group.id)
     group.items.forEach((item, itemIndex) => {
       add({
         id: `check-${group.id}-${itemIndex}`,
@@ -205,7 +210,7 @@ function buildIndex() {
         title: item,
         context: `${group.day} · ${checklistInfo.title}`,
         text: item,
-      })
+      }, 'checklist', 0, group.id)
     })
   })
 
@@ -215,7 +220,7 @@ function buildIndex() {
     title: hundoReference.title,
     context: '100% IV · Catch CP values',
     text: collectText(hundoReference).join(' '),
-  })
+  }, hundoReference.id, 2)
   hundoReference.rows.forEach((row) => {
     add({
       id: `hundo-${slug(row[0])}`,
@@ -223,7 +228,7 @@ function buildIndex() {
       title: row[0],
       context: hundoReference.title,
       text: row.join(' '),
-    })
+    }, hundoReference.id, 0, 'hundo-rows')
   })
 
   add({
@@ -232,7 +237,7 @@ function buildIndex() {
     title: raidStrategies.title,
     context: 'Raid preparation',
     text: collectText(raidStrategies).join(' '),
-  })
+  }, raidStrategies.id, 2)
   raidStrategies.items.forEach((item, itemIndex) => {
     add({
       id: `strategy-${itemIndex}`,
@@ -240,7 +245,7 @@ function buildIndex() {
       title: item,
       context: raidStrategies.title,
       text: item,
-    })
+    }, raidStrategies.id, 0, 'strategy-items')
   })
 
   add({
@@ -249,7 +254,7 @@ function buildIndex() {
     title: raidResources.title,
     context: 'Raid preparation',
     text: collectText(raidResources).join(' '),
-  })
+  }, raidResources.id, 2)
   raidResources.items.forEach((item, itemIndex) => {
     add({
       id: `resource-${itemIndex}`,
@@ -257,7 +262,7 @@ function buildIndex() {
       title: item,
       context: raidResources.title,
       text: item,
-    })
+    }, raidResources.id, 0, 'resource-items')
   })
 
   closingNotes.forEach((note, itemIndex) => {
@@ -279,7 +284,7 @@ export function searchDiary(rawQuery: string, limit = 8): SearchHit[] {
   const query = normalize(rawQuery)
   if (!query) return []
 
-  return searchIndex
+  const matches = searchIndex
     .map((entry, order) => {
       const title = normalize(entry.title)
       const text = normalize(entry.text)
@@ -289,7 +294,18 @@ export function searchDiary(rawQuery: string, limit = 8): SearchHit[] {
       return { ...entry, score, order }
     })
     .filter((entry): entry is SearchHit & { order: number } => entry !== null)
-    .sort((a, b) => a.score - b.score || a.order - b.order)
+
+  return matches
+    .filter((entry) => {
+      const scope = entry.scope ?? 2
+      if (scope === 0) return true
+
+      return !matches.some((candidate) => {
+        if (candidate.group !== entry.group || (candidate.scope ?? 2) >= scope) return false
+        return scope === 2 || candidate.blockId === entry.blockId
+      })
+    })
+    .sort((a, b) => a.score - b.score || (a.scope ?? 2) - (b.scope ?? 2) || a.order - b.order)
     .slice(0, limit)
     .map(({ order: _order, ...hit }) => hit)
 }
