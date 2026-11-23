@@ -185,9 +185,10 @@ export function DiaryApp() {
             { id: 'events', label: 'Event diary' },
             { id: 'checklist', label: 'Checklist' },
             { id: 'cp-reference', label: 'Hundo CP' },
+            { id: 'type-chart', label: 'Type chart', href: '/type-chart' },
           ].map((item) => (
             <a
-              href={`#${item.id}`}
+              href={'href' in item ? item.href : `#${item.id}`}
               key={item.id}
               className={activeNav === item.id ? 'active' : ''}
               onClick={() => setActiveNav(item.id)}
