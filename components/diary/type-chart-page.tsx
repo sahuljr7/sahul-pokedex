@@ -17,6 +17,7 @@ function TypeChartHeader({ isDark, onThemeToggle }: { isDark: boolean; onThemeTo
         <a href="/">Diary</a>
         <a className="active" href="/type-chart" aria-current="page">Type chart</a>
         <a href="/dual-type-chart">Dual types</a>
+        <a href="/kanto-weaknesses">Kanto</a>
       </nav>
       <div className="topbar-actions">
         <button

@@ -2559,3 +2559,157 @@ summary:focus-visible,
     transition-duration: 0.01ms !important;
   }
 }
+
+.kanto-multiplier-section {
+  padding-top: 24px;
+}
+
+.kanto-multiplier-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kanto-multiplier-card {
+  display: grid;
+  min-height: 104px;
+  align-content: center;
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-solid) 70%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.kanto-multiplier-card strong {
+  color: var(--accent-strong);
+  font-size: 25px;
+  font-weight: 680;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.kanto-multiplier-card span {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.kanto-weakness-section {
+  padding-top: 66px;
+}
+
+.kanto-table-surface {
+  padding: 7px;
+}
+
+.kanto-table-scroll {
+  border: 0;
+  background: transparent;
+}
+
+.kanto-table {
+  min-width: 900px;
+  table-layout: fixed;
+}
+
+.kanto-table thead th:nth-child(1) {
+  width: 170px;
+}
+
+.kanto-table thead th:nth-child(2) {
+  width: 145px;
+}
+
+.kanto-table thead th:nth-child(3) {
+  width: 335px;
+}
+
+.kanto-table thead th:nth-child(4) {
+  width: 250px;
+}
+
+.kanto-table tbody th {
+  white-space: nowrap;
+}
+
+.kanto-table .dual-type-tags {
+  gap: 5px;
+}
+
+.kanto-raid-section {
+  padding-top: 62px;
+}
+
+.kanto-raid-table {
+  min-width: 520px;
+}
+
+.kanto-raid-table th:first-child {
+  width: 150px;
+}
+
+.kanto-raid-table th:nth-child(2) {
+  width: 300px;
+}
+
+.kanto-scope-caveat {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .kanto-multiplier-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .kanto-multiplier-section {
+    padding-top: 14px;
+  }
+
+  .kanto-multiplier-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .kanto-multiplier-card {
+    min-height: 88px;
+    padding: 13px;
+  }
+
+  .kanto-multiplier-card strong {
+    font-size: 22px;
+  }
+
+  .kanto-weakness-section {
+    padding-top: 54px;
+  }
+
+  .kanto-toolbar {
+    align-items: stretch;
+  }
+
+  .kanto-toolbar .dual-type-search {
+    flex-basis: 100%;
+  }
+
+  .kanto-toolbar .dual-type-filter {
+    flex: 1;
+  }
+
+  .kanto-toolbar .dual-type-filter button {
+    flex: 1;
+  }
+
+  .kanto-toolbar .dual-type-result-count {
+    width: 100%;
+    margin-left: 0;
+    text-align: right;
+  }
+
+  .kanto-raid-section {
+    padding-top: 52px;
+  }
+}
