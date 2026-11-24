@@ -21,6 +21,7 @@ function DualTypeHeader({ isDark, onThemeToggle }: { isDark: boolean; onThemeTog
         <a href="/">Diary</a>
         <a href="/type-chart">Type chart</a>
         <a className="active" href="/dual-type-chart" aria-current="page">Dual types</a>
+        <a href="/kanto-weaknesses">Kanto</a>
       </nav>
       <div className="topbar-actions">
         <button

@@ -187,6 +187,7 @@ export function DiaryApp() {
             { id: 'cp-reference', label: 'Hundo CP' },
             { id: 'type-chart', label: 'Type chart', href: '/type-chart' },
             { id: 'dual-type-chart', label: 'Dual types', href: '/dual-type-chart' },
+            { id: 'kanto-weaknesses', label: 'Kanto', href: '/kanto-weaknesses' },
           ].map((item) => (
             <a
               href={'href' in item ? item.href : `#${item.id}`}
