@@ -51,6 +51,10 @@ export type ContentBlock =
 export type DiaryEvent = {
   id: string
   date: string
+  /** First day the event applies to, as a local calendar date (YYYY-MM-DD). */
+  startDate: string
+  /** Last day the event applies to, as a local calendar date (YYYY-MM-DD). */
+  endDate: string
   title: string
   subtitle?: string
   blocks: ContentBlock[]
@@ -79,6 +83,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'monday-espurr',
     date: 'Monday, November 23',
+    startDate: '2026-11-23',
+    endDate: '2026-11-23',
     title: 'Dynamax Espurr',
     subtitle: 'Max Battle preparation',
     blocks: [
@@ -149,6 +155,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'tuesday-twilight-wishes',
     date: 'Tuesday, November 24',
+    startDate: '2026-11-24',
+    endDate: '2026-11-24',
     title: 'Twilight Wishes',
     blocks: [
       {
@@ -226,6 +234,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'wednesday-deoxys-metagross',
     date: 'Wednesday, November 25',
+    startDate: '2026-11-25',
+    endDate: '2026-11-25',
     title: 'Deoxys Raid Hour + Mega Metagross',
     subtitle: 'Highest raid priority of the week',
     blocks: [
@@ -357,6 +367,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'thursday-noibat',
     date: 'Thursday, November 26',
+    startDate: '2026-11-26',
+    endDate: '2026-11-26',
     title: 'Noibat Spotlight Hour',
     subtitle: '2× Catch Candy\n6–7 p.m. local time',
     blocks: [
@@ -420,6 +432,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'friday-friendship',
     date: 'Friday, November 27',
+    startDate: '2026-11-27',
+    endDate: '2026-11-27',
     title: 'Friendship Friday + Global Challenge',
     blocks: [
       {
@@ -458,6 +472,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'saturday-mega-clefable',
     date: 'Saturday, November 28',
+    startDate: '2026-11-28',
+    endDate: '2026-11-28',
     title: 'Mega Clefable Super Mega Raid Day',
     subtitle: 'Major event of the week',
     blocks: [
@@ -581,6 +597,8 @@ export const events: DiaryEvent[] = [
   {
     id: 'sunday-scenic',
     date: 'Sunday, November 29',
+    startDate: '2026-11-29',
+    endDate: '2026-11-29',
     title: 'Scenic Sunday',
     blocks: [
       {

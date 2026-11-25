@@ -54,9 +54,11 @@ function BlockLead({ lead }: { lead?: string | string[] }) {
   )
 }
 
-export function ContentBlockView({ block }: { block: ContentBlock }) {
+export function ContentBlockView({ block, idPrefix = '' }: { block: ContentBlock; idPrefix?: string }) {
+  const blockId = `${idPrefix}${block.id}`
+
   return (
-    <section className="detail-block" id={block.id}>
+    <section className="detail-block" id={blockId}>
       {block.title && <div className="detail-heading"><h3>{block.title}</h3></div>}
 
       {block.type === 'paragraphs' && (
@@ -70,7 +72,7 @@ export function ContentBlockView({ block }: { block: ContentBlock }) {
           <BlockLead lead={block.lead} />
           <ul className="detail-list">
             {block.items.map((item, index) => (
-              <li id={`${block.id}-item-${index}`} key={`${block.id}-${index}`}>{item}</li>
+              <li id={`${blockId}-item-${index}`} key={`${block.id}-${index}`}>{item}</li>
             ))}
           </ul>
         </>
@@ -82,7 +84,7 @@ export function ContentBlockView({ block }: { block: ContentBlock }) {
           <DataTable
             columns={block.columns}
             rows={block.rows}
-            rowIds={block.rows.map((_, index) => `${block.id}-row-${index}`)}
+            rowIds={block.rows.map((_, index) => `${blockId}-row-${index}`)}
           />
           {block.note && <p className="table-note">{block.note}</p>}
         </>
@@ -93,7 +95,7 @@ export function ContentBlockView({ block }: { block: ContentBlock }) {
           <BlockLead lead={block.lead} />
           <div className="team-list">
             {block.items.map((item, index) => (
-              <article className="team-member" id={`${block.id}-item-${index}`} key={`${block.id}-${index}`}>
+              <article className="team-member" id={`${blockId}-item-${index}`} key={`${block.id}-${index}`}>
                 <div>
                   <h4>{item.title}</h4>
                   {item.details && <p>{item.details}</p>}
@@ -109,7 +111,7 @@ export function ContentBlockView({ block }: { block: ContentBlock }) {
           <BlockLead lead={block.lead} />
           <dl className="pair-list">
             {block.items.map((item, index) => (
-              <div id={`${block.id}-row-${index}`} key={`${item.label}-${index}`}>
+              <div id={`${blockId}-row-${index}`} key={`${item.label}-${index}`}>
                 <dt>{item.label}</dt>
                 <dd>{item.value}</dd>
               </div>
@@ -121,7 +123,7 @@ export function ContentBlockView({ block }: { block: ContentBlock }) {
       {block.type === 'facts' && (
         <dl className="facts-list">
           {block.items.map((item, index) => (
-            <div id={`${block.id}-row-${index}`} key={`${item.label}-${index}`}>
+            <div id={`${blockId}-row-${index}`} key={`${item.label}-${index}`}>
               <dt>{item.label}</dt>
               <dd>
                 <span>{item.value}</span>

@@ -1,16 +1,7 @@
 'use client'
 
-import { useCallback, useState } from 'react'
-import {
-  ArrowDown,
-  ArrowRight,
-  BookOpen,
-  ChevronDown,
-  CircleDot,
-  Moon,
-  Sun,
-  Swords,
-} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ArrowRight, BookOpen, ChevronDown, Moon, Sun, Swords } from 'lucide-react'
 import {
   additionalMegaRaids,
   closingNotes,
@@ -19,18 +10,26 @@ import {
   introduction,
   raidResources,
   raidStrategies,
+  type DiaryEvent,
 } from '@/lib/diary-data'
 import { type SearchHit } from '@/lib/diary-search'
+import { eventsForDate, formatLongDate, formatShortDate, todayDateKey } from '@/lib/diary-dates'
 import { ChecklistSection } from '@/components/diary/checklist'
 import { ContentBlockView, DataTable } from '@/components/diary/content-block'
 import { DiarySearch } from '@/components/diary/diary-search'
+import { EventCalendar } from '@/components/diary/event-calendar'
 
 function scrollToTarget(targetId: string, focusTarget = false) {
   window.requestAnimationFrame(() => {
     const target = document.getElementById(targetId)
     if (!target) return
     if (target instanceof HTMLDetailsElement) target.open = true
-    target.closest('details')?.setAttribute('open', '')
+    // Open every collapsed ancestor, so archive entries reached from search are visible.
+    let details = target.closest('details')
+    while (details) {
+      details.open = true
+      details = details.parentElement?.closest('details') ?? null
+    }
     if (focusTarget) {
       target.setAttribute('tabindex', '-1')
       target.focus({ preventScroll: true })
@@ -39,25 +38,80 @@ function scrollToTarget(targetId: string, focusTarget = false) {
   })
 }
 
+function EventEntry({
+  event,
+  index,
+  defaultOpen = false,
+  onJump,
+  idPrefix = '',
+}: {
+  event: DiaryEvent
+  index?: number
+  defaultOpen?: boolean
+  onJump?: (targetId: string) => void
+  idPrefix?: string
+}) {
+  return (
+    <details className="event-entry" id={`${idPrefix}${event.id}`} open={defaultOpen || undefined}>
+      <summary className="event-summary">
+        <span className="event-summary-copy">
+          <span className="event-name">
+            {index === undefined ? event.title : `${index + 1}. ${event.date} — ${event.title}`}
+          </span>
+          {event.subtitle && <span className="event-subtitle">{event.subtitle}</span>}
+        </span>
+        <ChevronDown size={18} className="event-chevron" aria-hidden="true" />
+      </summary>
+      <div className="event-content">
+        {event.blocks.map((block) => <ContentBlockView block={block} key={block.id} idPrefix={idPrefix} />)}
+        {onJump && (
+          <button className="text-link event-return" type="button" onClick={() => onJump('events')}>
+            Back to the calendar <ArrowRight size={14} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+    </details>
+  )
+}
+
+function EventList({
+  dayEvents,
+  defaultOpen = false,
+  emptyMessage,
+  emptyHint,
+  onJump,
+  idPrefix = '',
+}: {
+  dayEvents: DiaryEvent[]
+  defaultOpen?: boolean
+  emptyMessage: string
+  emptyHint?: string
+  onJump?: (targetId: string) => void
+  idPrefix?: string
+}) {
+  if (dayEvents.length === 0) {
+    return (
+      <div className="daily-empty" role="status">
+        <strong>{emptyMessage}</strong>
+        {emptyHint && <span>{emptyHint}</span>}
+      </div>
+    )
+  }
+
+  return (
+    <div className="event-list">
+      {dayEvents.map((event) => (
+        <EventEntry event={event} key={event.id} defaultOpen={defaultOpen} onJump={onJump} idPrefix={idPrefix} />
+      ))}
+    </div>
+  )
+}
+
 function EventTimeline({ onJump }: { onJump: (targetId: string) => void }) {
   return (
     <div className="event-list">
       {events.map((event, index) => (
-        <details className="event-entry" id={event.id} key={event.id}>
-          <summary className="event-summary">
-            <span className="event-summary-copy">
-              <span className="event-name">{index + 1}. {event.date} — {event.title}</span>
-              {event.subtitle && <span className="event-subtitle">{event.subtitle}</span>}
-            </span>
-            <ChevronDown size={18} className="event-chevron" aria-hidden="true" />
-          </summary>
-          <div className="event-content">
-            {event.blocks.map((block) => <ContentBlockView block={block} key={block.id} />)}
-            <button className="text-link event-return" type="button" onClick={() => onJump('events')}>
-              Back to this week <ArrowRight size={14} aria-hidden="true" />
-            </button>
-          </div>
-        </details>
+        <EventEntry event={event} index={index} key={event.id} onJump={onJump} />
       ))}
     </div>
   )
@@ -137,13 +191,35 @@ function HundoReference() {
 export function DiaryApp() {
   const [isDark, setIsDark] = useState(false)
   const [activeNav, setActiveNav] = useState('home')
+  const [today, setToday] = useState(() => todayDateKey())
+  const [selectedDate, setSelectedDate] = useState(() => todayDateKey())
+
+  // Re-read the browser's local date after mount so the daily view always
+  // follows the visitor's timezone, not the server's.
+  useEffect(() => {
+    const localToday = todayDateKey()
+    setToday(localToday)
+    setSelectedDate(localToday)
+  }, [])
+
+  const todayEvents = useMemo(() => eventsForDate(events, today), [today])
+  const selectedEvents = useMemo(() => eventsForDate(events, selectedDate), [selectedDate])
+  const isTodaySelected = selectedDate === today
 
   const handleSearchSelect = useCallback((hit: SearchHit) => {
+    const hitEvent = events.find((event) =>
+      hit.target === event.id ||
+      hit.target.startsWith(`${event.id}-`) ||
+      (hit.blockId ? event.blocks.some((block) => block.id === hit.blockId) : false) ||
+      event.blocks.some((block) => hit.target === block.id || hit.target.startsWith(`${block.id}-`)),
+    )
+    if (hitEvent) setSelectedDate(hitEvent.startDate)
+
     if (hit.target === 'home') setActiveNav('home')
     else if (hit.target === 'cp-reference' || hit.target.startsWith('hundo-row-')) setActiveNav('cp-reference')
     else if (hit.target === 'checklist' || hit.target.startsWith('check-')) setActiveNav('checklist')
     else if (
-      events.some((event) => hit.target === event.id || hit.target.startsWith(`${event.id}-`)) ||
+      hitEvent ||
       hit.target === additionalMegaRaids.id ||
       hit.target.startsWith(`${additionalMegaRaids.id}-`) ||
       hit.target.startsWith('additional-mega-') ||
@@ -174,10 +250,9 @@ export function DiaryApp() {
       <div className="ambient ambient-two" aria-hidden="true" />
 
       <header className="topbar">
-  <a className="brand" href="#home" aria-label={`${introduction.title} home`} onClick={() => setActiveNav('home')}>
-  <span className="brand-mark"><BookOpen size={18} aria-hidden="true" /></span>
-  <span className="brand-copy"><strong>{introduction.title.replace(/^📖\s/, '')}</strong></span>
-
+        <a className="brand" href="#home" aria-label={`${introduction.title} home`} onClick={() => setActiveNav('home')}>
+          <span className="brand-mark"><BookOpen size={18} aria-hidden="true" /></span>
+          <span className="brand-copy"><strong>{introduction.title.replace(/^📖\s/, '')}</strong></span>
         </a>
         <nav className="main-nav" aria-label="Main navigation">
           {[
@@ -206,44 +281,80 @@ export function DiaryApp() {
       </header>
 
       <div className="page-frame">
-        <section className="hero-section" aria-labelledby="page-title">
-          <div className="hero-copy">
-            <p className="hero-date">{introduction.dateRange}</p>
-            <h1 id="page-title" aria-label={introduction.title}>
-  <BookOpen className="hero-title-icon" aria-hidden="true" />
-  <span>{introduction.title.replace(/^📖\s/, '')}</span>
-  </h1>
-            <p className="hero-subtitle">{introduction.paragraphs[0]}</p>
-            <a className="hero-link" href="#events" onClick={() => setActiveNav('events')}>
-              Explore the week <ArrowDown size={16} aria-hidden="true" />
-            </a>
-          </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="orbit orbit-outer" />
-            <div className="orbit orbit-inner" />
-            <div className="orbit-core"><CircleDot size={50} strokeWidth={1.2} /></div>
-            <span className="orbital-dot orbital-dot-one" />
-            <span className="orbital-dot orbital-dot-two" />
-            <span className="orbital-dot orbital-dot-three" />
-          </div>
+        <section className="daily-view" aria-labelledby="daily-title">
+          <p className="hero-eyebrow"><span className="eyebrow-dot" aria-hidden="true" />Daily view</p>
+          <h1 className="daily-date" id="daily-title" suppressHydrationWarning>{formatLongDate(today)}</h1>
+          <p className="daily-subtitle" suppressHydrationWarning>{introduction.paragraphs[0]}</p>
         </section>
 
-        <section className="guide-coverage" aria-label="Diary guide topics">
-          <p className="guide-introduction">{introduction.paragraphs[1]}</p>
-          <div className="coverage-topics">
-            {introduction.coverage.map((topic) => <span className="coverage-topic" key={topic}>{topic}</span>)}
-          </div>
-          <aside className="coverage-note"><p>{introduction.note}</p></aside>
-        </section>
-
-        <section className="content-section events-section" id="events" aria-labelledby="events-title">
+        <section className="content-section daily-events" aria-labelledby="today-events-title">
           <div className="section-heading">
             <div>
-              <h2 id="events-title">The event diary</h2>
+              <p className="section-eyebrow">Today&apos;s events</p>
+              <h2 id="today-events-title" suppressHydrationWarning>Events for {formatShortDate(today)}</h2>
             </div>
           </div>
-          <EventTimeline onJump={handleJump} />
-          <AdditionalMegaRaidSection />
+          <EventList
+            dayEvents={todayEvents}
+            defaultOpen
+            onJump={handleJump}
+            idPrefix="today-"
+            emptyMessage="No Pokémon GO events scheduled for today."
+            emptyHint="Choose another date in the calendar below to see this week's events."
+          />
+        </section>
+
+        <section className="content-section calendar-section" id="events" aria-labelledby="calendar-title">
+          <div className="section-heading">
+            <div>
+              <p className="section-eyebrow">Explore by date</p>
+              <h2 id="calendar-title">Event calendar</h2>
+              <p className="section-description">
+                Today&apos;s events stay at the top of the page. Pick any other day here to look back or ahead.
+              </p>
+            </div>
+          </div>
+
+          <EventCalendar
+            events={events}
+            selectedDate={selectedDate}
+            today={today}
+            onSelect={setSelectedDate}
+          />
+
+          {!isTodaySelected && (
+            <section className="selected-date-panel" aria-labelledby="selected-date-title">
+              <div className="selected-date-heading">
+                <h3 id="selected-date-title" suppressHydrationWarning>Selected date: {formatShortDate(selectedDate)}</h3>
+                <button type="button" className="quiet-button reset-button" onClick={() => setSelectedDate(today)}>
+                  Back to today
+                </button>
+              </div>
+              <p className="selected-date-note">Only events for the selected date are shown.</p>
+              <EventList
+                dayEvents={selectedEvents}
+                defaultOpen
+                idPrefix="selected-"
+                emptyMessage="No Pokémon GO events scheduled for this date."
+                emptyHint="Dates with a dot in the calendar have event information."
+              />
+            </section>
+          )}
+
+          <details className="archive-details" id="event-archive">
+            <summary className="archive-summary">
+              <span className="archive-copy">
+                <span className="section-eyebrow">Event diary</span>
+                <span className="archive-title">Full event archive</span>
+                <span className="section-description">Every event in this diary, in order. Search results open here automatically.</span>
+              </span>
+              <ChevronDown size={18} className="archive-chevron" aria-hidden="true" />
+            </summary>
+            <div className="archive-body">
+              <EventTimeline onJump={handleJump} />
+              <AdditionalMegaRaidSection />
+            </div>
+          </details>
         </section>
 
         <ChecklistSection />
@@ -277,12 +388,11 @@ export function DiaryApp() {
           </div>
 
           <div className="final-notes">
-  {closingNotes.map((note, index) => (
-  <p id={`closing-note-${index}`} key={`closing-${index}`} aria-label={note}>
-    {note.endsWith(' ⚔️') ? <>{note.slice(0, -3)}<Swords className="closing-note-icon" aria-hidden="true" /></> : note}
-  </p>
-  ))}
-
+            {closingNotes.map((note, index) => (
+              <p id={`closing-note-${index}`} key={`closing-${index}`} aria-label={note}>
+                {note.endsWith(' ⚔️') ? <>{note.slice(0, -3)}<Swords className="closing-note-icon" aria-hidden="true" /></> : note}
+              </p>
+            ))}
           </div>
         </section>
 

@@ -2,11 +2,13 @@
 
 A simple website that keeps a week of Pokémon GO battle prep in one place. Instead of scrolling through notes and Reddit threads, you get the dates, the counters, and the numbers you need on a single page.
 
-It covers the week of **23–29 November 2026**.
+It covers the week of **23–29 November 2026**. The homepage opens on today's date and shows only today's events, with an interactive calendar for looking at any other day.
 
 ## What's in it
 
-- **Event timeline** — each day's event (Dynamax Espurr, Twilight Wishes, Deoxys, Mega raids and so on), with the best counters, movesets and battle tips.
+- **Daily view** — today's date and only the events scheduled for today, or a short message when the day is empty.
+- **Event calendar** — a month-by-month calendar with dots on days that have event data. Click any day to see its events, and use **Today** to come back. The full event archive stays available below the calendar.
+- **Event details** — each day's event (Dynamax Espurr, Twilight Wishes, Deoxys, Mega raids and so on), with the best counters, movesets and battle tips.
 - **Type and weakness charts** — which types beat which, plus a dual-type chart for Pokémon that have two types at once.
 - **Kanto weaknesses** — a quick list of weaknesses for the Kanto Pokémon.
 - **Hundo CP sheet** — the CP numbers to look for when catching a 100% IV Pokémon after a raid, with and without weather boost.
